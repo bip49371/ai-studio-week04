@@ -11,16 +11,31 @@ dirty_sales.csv를 한 줄씩 읽어 '매출액 = 단가 x 수량'을 누적한�
 """
 import csv
 
-def calc_total(path):
+
+
+def calc_total(path): 
     total = 0
     with open(path, "r", encoding="utf-8") as f:
         reader = csv.DictReader(f)  # 사전타입으로 데이터를 읽음.
+        """FIXED : 문자에 ,가 삽입되어 ValueError 발생. 이후 확인해보니 다른 행에서 '원', 빈값으로 인하여 Error가 발생할 가능성을 수정하고자 
+            빈 값이 존재하는 행에 대해서는 이후 행으로 넘긴 뒤, .replace를 이용하여 ,와 원을 제거하면서 price와 quantity의 값을 int로 변환"""
         for i, row in enumerate(reader):
-            price = int(row["price"])        # <-- 여기가 문제의 줄
-            qty = int(row["quantity"])
+            price_text = row["price"].strip()
+            qty_text = row["quantity"].strip()
+
+            if price_text == "" or qty_text == "":
+                print(f"{i}행: 빈 값이 있어 건너뜀")
+                continue
+
+            price = int(
+                price_text
+                .replace(",", "")
+                .replace("원", "")
+            )
+            qty = int(qty_text)
             total += price * qty
     return total
 
 if __name__ == "__main__":
-    total = calc_total("./Week4/dirty_sales.csv")
+    total = calc_total("./dirty_sales.csv")
     print(f"총 매출액: {total:,}원")
