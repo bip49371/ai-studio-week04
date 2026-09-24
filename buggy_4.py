@@ -23,11 +23,10 @@ def main():
                               .str.strip())
     df["price"] = pd.to_numeric(df["price"], errors="coerce")
 
-    # 결측치 확인
+    #FIXED: NaN, 이상치를 건너뛰고 sum()하고 제외된 값을 추출하도록 코드를 구성
     print("결측치 개수")
     print(df.isna().sum())
 
-    # 이상치 기준 계산
     q1 = df["price"].quantile(0.25)
     q3 = df["price"].quantile(0.75)
     iqr = q3 - q1
@@ -35,30 +34,25 @@ def main():
     lower = q1 - 1.5 * iqr
     upper = q3 + 1.5 * iqr
 
-    # 이상치 조건
     outlier_mask = (
         (df["price"] < lower) |
         (df["price"] > upper) |
         (df["price"] < 0)
     )
 
-    # NaN 조건
     nan_mask = (
         df["price"].isna() |
         df["quantity"].isna()
     )
 
-    # 제외할 행
     exclude_mask = outlier_mask | nan_mask
     excluded = df[exclude_mask]
 
     print(f"\n제외된 행: {len(excluded)}건 / 전체 {len(df)}건")
     print(excluded)
 
-    # 정상 데이터만 남김
     clean_df = df[~exclude_mask].copy()
 
-    # 정상 데이터로 매출 계산
     clean_df["revenue"] = clean_df["price"] * clean_df["quantity"]
 
     total = clean_df["revenue"].sum()

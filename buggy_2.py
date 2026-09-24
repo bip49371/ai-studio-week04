@@ -15,21 +15,15 @@ def load(path):
     df = pd.read_csv(path, encoding="utf-8")
     return df
 
-def summarize(df):
-    # 단가 x 수량으로 매출액 컬럼을 만든 뒤 카테고리별 합계를 낸다
-    
-    df["매출액"] = df["price"] * df["quantity"]        # 단가, 수량 대신 본래 열인 price, quantity 사용
-    return df.groupby("category")["매출액"].sum()
 
 def summarize(df):
-    # 단가 x 수량으로 매출액 컬럼을 만든 뒤 카테고리별 합계를 낸다
-    df["price"] = pd.to_numeric(df["price"], errors="coerce") #price, quantity행을 숫자로 변환. errors="coerce"를 통해 변환 불가능한 행 NaN으로 표시
+    df["price"] = pd.to_numeric(df["price"], errors="coerce") #FIXED: price, quantity행을 숫자로 변환. errors="coerce"를 통해 변환 불가능한 행 NaN으로 표시
     df["quantity"] = pd.to_numeric(df["quantity"], errors="coerce")
 
     print("숫자로 변환하지 못한 행:")
-    print(df[df["price"].isna() | df["quantity"].isna()]) #결측값인지 검사하여 True, False 반환하고 결측값이면 출력.
+    print(df[df["price"].isna() | df["quantity"].isna()]) #FIXED : 결측값인지 검사하여 True, False 반환하고 결측값이면 출력.
 
-    df["매출액"] = df["price"] * df["quantity"]
+    df["매출액"] = df["price"] * df["quantity"] # FIXED: 단가, 수량 대신 본래 열인 price, quantity 사용
 
     return df.groupby("category")["매출액"].sum()
 
