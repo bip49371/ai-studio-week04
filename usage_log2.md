@@ -35,6 +35,7 @@ AI 답변 요지:
 print(df.columns) 를 통해 가설 검증
 -> 가설이 맞음 'date', 'product', 'category', 'price', 'quantity', 'stock'
 
+"단가"를 "price", "수량"을 "quantity"로 수정 코드 작성.
 
 ___
 
@@ -56,3 +57,4 @@ def summarize(df):
     df["매출액"] = df["price"] * df["수량"]
 
     return df.groupby("category")["매출액"].sum()
+![alt text](image-1.png)
