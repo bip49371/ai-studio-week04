@@ -17,23 +17,56 @@ import pandas as pd
 def main():
     df = pd.read_csv("dirty_sales.csv", encoding="utf-8")
 
-    # price를 숫자로 바꾼다 (빈 값은 NaN이 된다 — 그런데 그 규모를 확인하지 않았다)
     df["price"] = (df["price"].astype(str)
                               .str.replace(",", "")
                               .str.replace("원", "")
                               .str.strip())
     df["price"] = pd.to_numeric(df["price"], errors="coerce")
 
-    # 매출액 = 단가 x 수량 (NaN이 섞이면 그 행의 매출액도 NaN)
-    df["revenue"] = df["price"] * df["quantity"]
+    # 결측치 확인
+    print("결측치 개수")
+    print(df.isna().sum())
 
-    # sum()은 NaN을 조용히 건너뛰고, 음수/극단값은 그대로 더한다
-    total = df["revenue"].sum()
-    avg_price = df["price"].mean()
+    # 이상치 기준 계산
+    q1 = df["price"].quantile(0.25)
+    q3 = df["price"].quantile(0.75)
+    iqr = q3 - q1
 
+    lower = q1 - 1.5 * iqr
+    upper = q3 + 1.5 * iqr
+
+    # 이상치 조건
+    outlier_mask = (
+        (df["price"] < lower) |
+        (df["price"] > upper) |
+        (df["price"] < 0)
+    )
+
+    # NaN 조건
+    nan_mask = (
+        df["price"].isna() |
+        df["quantity"].isna()
+    )
+
+    # 제외할 행
+    exclude_mask = outlier_mask | nan_mask
+    excluded = df[exclude_mask]
+
+    print(f"\n제외된 행: {len(excluded)}건 / 전체 {len(df)}건")
+    print(excluded)
+
+    # 정상 데이터만 남김
+    clean_df = df[~exclude_mask].copy()
+
+    # 정상 데이터로 매출 계산
+    clean_df["revenue"] = clean_df["price"] * clean_df["quantity"]
+
+    total = clean_df["revenue"].sum()
+    avg_price = clean_df["price"].mean()
+
+    print(f"\n집계에 사용된 행: {len(clean_df)}건")
     print(f"총 매출액: {total:,.0f}원")
     print(f"평균 단가: {avg_price:,.0f}원")
-    # 출력은 그럴듯하지만, 이 숫자를 그대로 믿어도 될까?
-
+    
 if __name__ == "__main__":
     main()
