@@ -21,11 +21,11 @@ def load_and_clean(path):
                               .str.strip())
     df["price"] = pd.to_numeric(df["price"], errors="coerce")
     df["revenue"] = df["price"] * df["quantity"]
-    # (여기서 정제된 df를 돌려주려고 했는데...)   <-- 무언가 빠져 있다
+    return df #FIXED : return이 없어서 load_and_clean을 사용할 경우 아무 값도 반환하지 못하는 문제 해결.
 
 def main():
     df = load_and_clean("dirty_sales.csv")
-    result = df.groupby("category")["revenue"].sum()   # <-- 여기서 죽는다
+    result = df.groupby("category")["revenue"].sum()
     print(result)
 
 if __name__ == "__main__":
